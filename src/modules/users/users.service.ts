@@ -4,10 +4,8 @@ import { Repository } from 'typeorm';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { v4 } from 'uuid';
-
-import { MailerService } from '@nestjs-modules/mailer';
 
 import {
   BadRequestException,
@@ -15,6 +13,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { UpdatePasswordUserDto } from './dto/updatePassword-user';
 
 // Se define la interfaz para la búsqueda de usuarios
 export interface UserFindOne {
@@ -27,7 +26,6 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly MailerService: MailerService,
   ) {}
 
   // servicio para crear un usuario en la base de datos
@@ -67,14 +65,16 @@ export class UsersService {
 
     delete (await newUser).password;
 
-    await this.sendVerification(email);
-
     return newUser;
   }
 
   // servicio para devolver todos los usuarios
   async findAllUsers(): Promise<User[]> {
-    const users = await this.userRepository.find({ relations: ['imagenes'] });
+    const users = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.imagenes', 'imagenes')
+      .addSelect(['imagenes.id', 'imagenes.url_imagen'])
+      .getMany();
 
     users.map((user) => {
       delete user.password;
@@ -155,104 +155,12 @@ export class UsersService {
     await this.userRepository.delete(id);
   }
 
-  // servicio para enviarCorreo de confirmación
-  async sendVerification(email: string) {
-    const user = await this.userRepository.findOne({ where: { email } });
-
-    if (!user) {
-      throw new NotFoundException('El usuario no existe');
-    }
-
-    // crea un token para el usuario
-    user.token = v4();
-
-    await this.userRepository.save(user);
-
-    const url = `http://localhost:3000/verify/${user.token}`;
-
-    const mailContent = `
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <title>Confirmar correo</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          margin: 0;
-          padding: 0;
-          background-color: #f4f4f4;
-        }
-        .container {
-          max-width: 600px;
-          margin: 0 auto;
-          padding: 20px;
-          background-color: #fff;
-          border-radius: 10px;
-          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          text-align: center;
-        }
-        .header {
-          margin-bottom: 20px;
-        }
-        .header h1 {
-          color: #333;
-        }
-        .content {
-          margin-bottom: 30px;
-          color: #333;
-        }
-        .content p {
-          font-size: 18px;
-          margin-bottom: 10px;
-        }
-        .content a {
-          display: inline-block;
-          padding: 10px 20px;
-          background-color: #1B396A;
-          color: #fff;
-          text-decoration: none;
-          border-radius: 5px;
-          font-size: 16px;
-        }
-        .footer {
-          color: #555;
-          font-size: 14px;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>Confirma tu correo</h1>
-        </div>
-        <div class="content">
-          <p>Hola <strong>${user.name}</strong>,</p>
-          <p>Hemos recibido una solicitud para registrase. Si no lo has solicitado
-          ignora este mensaje. De lo contrario haz clic en el siguiente botón para continuar:</p>
-          <a href="${url}">Confirmar correo</a>
-        </div>
-        <div class="footer">
-          <p>Este es un mensaje automatizado, por favor no responda.</p>
-        </div>
-      </div>
-    </body>
-    </html>    
-    `;
-
-    await this.MailerService.sendMail({
-      to: user.email,
-      subject: 'Confirma tu correo',
-      html: mailContent,
-    });
-  }
-
   // servicio para verificar el token
   async verifyToken(token: string) {
     const user = await this.userRepository.findOne({ where: { token } });
 
     if (!user) {
-      throw new NotFoundException('El usuario no existe');
+      throw new NotFoundException('Token no valido');
     }
 
     user.status = true;
@@ -263,5 +171,31 @@ export class UsersService {
     return {
       message: 'Correo confirmado',
     };
+  }
+
+  async verifytokenRecovery(token: string) {
+    const user = await this.userRepository.findOne({ where: { token } });
+
+    if (!user) {
+      throw new NotFoundException('El token no existe');
+    }
+
+    delete user.password;
+
+    return user;
+  }
+
+  // servicio para actualizar password
+  async updatePassword(token: string, updatePassword: UpdatePasswordUserDto) {
+    const user = await this.userRepository.findOne({ where: { token } });
+
+    if (user.token !== token) {
+      throw new ForbiddenException('Token no válido');
+    }
+
+    user.password = await hash(updatePassword.password, 10);
+    user.token = null;
+
+    await this.userRepository.save(user);
   }
 }

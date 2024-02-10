@@ -48,7 +48,7 @@ export class ImagenesController {
     @Param('userId') userId: string,
   ) {
     try {
-      const baseUrl = 'localhost:5000';
+      const baseUrl = 'http://localhost:5000';
       const imageUrl = `${baseUrl}/upload/${imagen.filename}`;
 
       const createdImagen = await this.imagenesService.createImagenUser(
@@ -81,7 +81,7 @@ export class ImagenesController {
     @Param('menuId') menuId: number,
   ) {
     try {
-      const baseUrl = 'localhost:5000';
+      const baseUrl = 'http://localhost:5000';
       const imageUrl = `${baseUrl}/upload/${imagen.filename}`;
 
       const createdImagen = await this.imagenesService.createImagenMenu(
@@ -114,7 +114,8 @@ export class ImagenesController {
     @Param('testimonyId') testimonyId: number,
   ) {
     try {
-      const baseUrl = 'localhost:5000';
+      //
+      const baseUrl = 'http://localhost:5000';
       const imageUrl = `${baseUrl}/upload/${imagen.filename}`;
 
       const createdImagen = await this.imagenesService.createImagenTestimony(

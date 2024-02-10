@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   NotFoundException,
+  Put,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,6 +18,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from 'src/common/decorator/user.decorator';
 import { User as UserEntity } from './entities/user.entity';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
+import { EmailService } from '../email/email.service';
 
 @ApiTags('users')
 @Controller('users')
@@ -25,12 +27,13 @@ export class UsersController {
     private readonly usersService: UsersService,
     @InjectRolesBuilder()
     private readonly rolesBuilder: RolesBuilder,
+    private readonly emailService: EmailService,
   ) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.createUser(createUserDto);
-
+    await this.emailService.sendVerification(user.email);
     return {
       message: 'Usuario creado',
       data: user,
@@ -123,6 +126,24 @@ export class UsersController {
 
     return {
       message: 'Usuario verificado',
+      data: user,
+    };
+  }
+
+  @Get('token-verification/:token')
+  async tokenVerification(@Param('token') token: string) {
+    return await this.usersService.verifytokenRecovery(token);
+  }
+
+  @Patch('update-password/:token')
+  async updatePassword(
+    @Param('token') token: string,
+    @Body() updatePassword: UpdateUserDto,
+  ) {
+    const user = await this.usersService.updatePassword(token, updatePassword);
+
+    return {
+      message: 'Contraseña actualizada',
       data: user,
     };
   }

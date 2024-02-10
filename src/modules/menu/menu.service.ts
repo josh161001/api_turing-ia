@@ -34,14 +34,6 @@ export class MenuService {
       throw new NotFoundException('Categoria no encontrada');
     }
 
-    const nameMenu = await this.menuRepository.findOne({
-      where: { name: createMenuDto.name },
-    });
-
-    if (nameMenu) {
-      throw new BadRequestException('Menu ya existe');
-    }
-
     const menu = this.menuRepository.create({
       ...createMenuDto,
       categories: category,

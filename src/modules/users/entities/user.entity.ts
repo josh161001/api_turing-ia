@@ -1,4 +1,4 @@
-import { AppResources, AppRoles } from 'src/app.roles';
+import { AppRoles } from 'src/app.roles';
 import { Imagene } from 'src/modules/imagenes/entities/imagene.entity';
 import {
   Column,
@@ -35,7 +35,7 @@ export class User {
 
   @OneToOne(() => Imagene, (imagene) => imagene.user, {
     eager: true,
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'imagen_id' })
   imagenes: Imagene;

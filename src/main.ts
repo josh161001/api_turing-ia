@@ -6,7 +6,9 @@ import * as express from 'express';
 import { hash } from 'bcrypt';
 import { User } from './modules/users/entities/user.entity';
 import { DataSource } from 'typeorm';
-import { AppResources, AppRoles } from './app.roles';
+import { AppRoles } from './app.roles';
+import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,7 +16,22 @@ async function bootstrap() {
   const userRepository = dataSource.getRepository(User);
 
   // Habilita CORS para permitir solicitudes desde diferentes dominios
-  app.enableCors({});
+  app.enableCors();
+
+  // Configuración de seguridad middleware
+  app.use(helmet());
+
+  // Configuración de los pipes
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: false,
+      forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
 
   // logica para crear un usuario por defecto
   const defaultUser = {
