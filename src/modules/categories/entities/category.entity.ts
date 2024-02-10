@@ -17,7 +17,7 @@ export class Category {
   name: string;
 
   @OneToMany(() => Menu, (menu) => menu.categories, {
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
   })
   menu: Menu[];
 

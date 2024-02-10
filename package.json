@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "prebuild": "rimraf dist && mkdir -p dist/upload dist/client && cp -r client/. dist/client && cp -r upload/. dist/upload",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -17,7 +18,12 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "ts-node ./node_modules/typeorm/cli",
+    "typeorm:generate-migration": "npm run typeorm -- -d ./ormconfig.ts migration:generate src/database/migrations/%npm_config_name%",
+    "typeorm:run-migrations": "npm run typeorm migration:run -- -d ./ormconfig.ts",
+    "typeorm:revert-migration": "npm run typeorm -- -d ./ormconfig.ts migration:revert",
+    "typeorm:run-seeders": "npm run typeorm -- migration:run && ts-node ./node_modules/typeorm-seeding/dist/cli.js"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.10.3",

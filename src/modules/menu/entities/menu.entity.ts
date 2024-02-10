@@ -33,6 +33,7 @@ export class Menu {
   imagenes: Imagene;
 
   @ManyToOne(() => Category, (category) => category.menu, {
+    nullable: true,
     eager: true,
     onDelete: 'SET NULL',
   })
