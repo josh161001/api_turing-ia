@@ -28,7 +28,7 @@ export class EmailService {
 
     await this.userRepository.save(user);
 
-    const url = `http://localhost:3000/#/verificar-cuenta/${user.token}`;
+    const url = `https://applicationfront.onrender.com/#/verificar-cuenta/${user.token}`;
 
     await this.sendEmail(user, 'Verificar cuenta', url, 'Verificar la cuenta');
   }
@@ -46,7 +46,7 @@ export class EmailService {
 
     await this.userRepository.save(user);
 
-    const url = `http://localhost:3000/#/recuperar-cuenta/${user.token}`;
+    const url = `https://applicationfront.onrender.com/#/recuperar-cuenta/${user.token}`;
 
     await this.sendEmail(
       user,
