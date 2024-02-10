@@ -48,7 +48,7 @@ export class ImagenesController {
     @Param('userId') userId: string,
   ) {
     try {
-      const baseUrl = 'http://localhost:5000';
+      const baseUrl = 'https://api-turing.onrender.com';
       const imageUrl = `${baseUrl}/upload/${imagen.filename}`;
 
       const createdImagen = await this.imagenesService.createImagenUser(
@@ -81,7 +81,7 @@ export class ImagenesController {
     @Param('menuId') menuId: number,
   ) {
     try {
-      const baseUrl = 'http://localhost:5000';
+      const baseUrl = 'https://api-turing.onrender.com';
       const imageUrl = `${baseUrl}/upload/${imagen.filename}`;
 
       const createdImagen = await this.imagenesService.createImagenMenu(
@@ -115,7 +115,7 @@ export class ImagenesController {
   ) {
     try {
       //
-      const baseUrl = 'http://localhost:5000';
+      const baseUrl = 'https://api-turing.onrender.com';
       const imageUrl = `${baseUrl}/upload/${imagen.filename}`;
 
       const createdImagen = await this.imagenesService.createImagenTestimony(
